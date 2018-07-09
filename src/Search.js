@@ -1,13 +1,10 @@
-import React from 'react';
+import React from "react";
 
-const Search = ({ value, onChange, children }) =>
-    <form>
+const Search = ({ value, onChange, children }) => (
+  <form>
     {children}
-    <input 
-      type="text"
-      onChange={onChange}
-      value={value}
-      />
+    <input type="text" onChange={onChange} value={value} />
   </form>
+);
 
-  export default Search;
+export default Search;
