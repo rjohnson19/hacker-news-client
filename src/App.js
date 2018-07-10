@@ -2,11 +2,17 @@ import React, { Component } from 'react';
 import './App.css';
 import Search from './Search';
 import Table from './Table';
+import Button from './Button';
 
 const DEFAULT_QUERY = 'redux';
+const DEFAULT_HITS_PER_PAGE = '100';
+const DEFAULT_TAGS = 'story';
 const PATH_BASE = 'https://hn.algolia.com/api/v1';
 const PATH_SEARCH = '/search';
 const PARAM_SEARCH = 'query=';
+const PARAM_TAGS = 'tags=';
+const PARAM_PAGE = 'page=';
+const PARAM_HITS_PER_PAGE = 'hitsPerPage='
 
 const username = 'rjohnson19';
 
@@ -29,7 +35,18 @@ class App extends Component {
   }
 
   setSearchTopStories(result) {
-    this.setState({ result });
+    const { hits, page } = result;
+    const oldHits = page !== 0
+      ? this.state.result.hits
+      : [];
+
+    const updatedHits = [
+      ...oldHits, ...hits
+    ];
+      
+    this.setState({ 
+      result: { hits: updatedHits, page } 
+    });
   }
 
   componentDidMount() {
@@ -37,8 +54,11 @@ class App extends Component {
     this.onSearchSubmit(null);
   }
 
-  fetchSearchTopStories(searchTerm) {
-    fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`)
+  fetchSearchTopStories(searchTerm, page = 0) {
+    const baseUrlSearch = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}`;
+    const filterParams = `&${PARAM_TAGS}${DEFAULT_TAGS}`
+    const pageParams = `&${PARAM_PAGE}${page}&${PARAM_HITS_PER_PAGE}${DEFAULT_HITS_PER_PAGE}`;
+    fetch(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
       .then(response => response.json())
       .then(result => this.setSearchTopStories(result))
       .catch(error => error);
@@ -67,6 +87,10 @@ class App extends Component {
 
   render() {
     const {searchTerm, result, username} = this.state;
+    let page = 0;
+    if (result && result.page) {
+      page = result.page;
+    }
 
     return (
       
@@ -87,6 +111,11 @@ class App extends Component {
             onDismiss={this.onDismiss}
           />
         }
+        <div class="interactions">
+          <Button onClick={() => this.fetchSearchTopStories(searchTerm, page + 1)}>
+          Next Page
+          </Button>
+        </div>
         
       </div>
     );
