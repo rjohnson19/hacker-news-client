@@ -24,7 +24,8 @@ class App extends Component {
       username,
       results: null,
       searchKey: "", // this is populated from seaarchTerm when it is submitted in onSearchSubmit()
-      searchTerm: DEFAULT_QUERY // this is the current value in the textbox, not neccesarily what is currently beind searched.
+      searchTerm: DEFAULT_QUERY, // this is the current value in the textbox, not neccesarily what is currently beind searched.
+      error: null
     };
 
     this.onDismiss = this.onDismiss.bind(this);
@@ -69,7 +70,7 @@ class App extends Component {
     fetch(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
       .then(response => response.json())
       .then(result => this.setSearchTopStories(result))
-      .catch(error => error);
+      .catch(error => this.setState({ error }));
   }
 
   onSearchChange(event) {
@@ -103,7 +104,7 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, results, searchKey, username } = this.state;
+    const { searchTerm, results, searchKey, username, error } = this.state;
     let page =
       results && results[searchKey] && results[searchKey].page
         ? results[searchKey].page
@@ -126,6 +127,12 @@ class App extends Component {
           </Search>
         </div>
         <Table list={list} onDismiss={this.onDismiss} />
+          <div className="interactions">
+            <p>Something went wrong.</p>
+          </div>
+        ) : (
+          <Table list={list} onDismiss={this.onDismiss} />
+        )}
         <div className="interactions">
           <Button
             onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
