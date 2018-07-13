@@ -126,7 +126,7 @@ class App extends Component {
             Search
           </Search>
         </div>
-        <Table list={list} onDismiss={this.onDismiss} />
+        {error ? (
           <div className="interactions">
             <p>Something went wrong.</p>
           </div>
