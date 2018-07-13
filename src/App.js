@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import axios from 'axios';
 import "./App.css";
 import Search from "./Search";
 import Table from "./Table";
@@ -17,6 +18,9 @@ const PARAM_HITS_PER_PAGE = "hitsPerPage=";
 const username = "rjohnson19";
 
 class App extends Component {
+  _isMounted = false;
+  _cancelRequest;
+
   constructor(props) {
     super(props);
 
@@ -59,18 +63,32 @@ class App extends Component {
   }
 
   componentDidMount() {
+    this._isMounted = true;
     // submit an initial search with the default term
     this.onSearchSubmit(null);
   }
 
+  componentWillUnmount() {
+    this._isMounted = false;
+    // cancel any pending http request
+    if (this._cancelRequest) {
+      this._cancelRequest();
+    }
+  }
+
   fetchSearchTopStories(searchTerm, page = 0) {
+    const CancelToken = axios.CancelToken;
     const baseUrlSearch = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}`;
     const filterParams = `&${PARAM_TAGS}${DEFAULT_TAGS}`;
     const pageParams = `&${PARAM_PAGE}${page}&${PARAM_HITS_PER_PAGE}${DEFAULT_HITS_PER_PAGE}`;
-    fetch(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
-      .then(response => response.json())
-      .then(result => this.setSearchTopStories(result))
-      .catch(error => this.setState({ error }));
+    let me = this;
+    axios.get(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`, {
+      cancelToken: new CancelToken(function executor(c) {
+        me._cancelRequest = c;
+      })
+    })
+      .then(result => this._isMounted && this.setSearchTopStories(result.data))
+      .catch(error => this._isMounted && this.setState({ error }));
   }
 
   onSearchChange(event) {
