@@ -75,7 +75,6 @@ class App extends Component {
     const baseUrlSearch = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}`;
     const filterParams = `&${PARAM_TAGS}${DEFAULT_TAGS}`;
     const pageParams = `&${PARAM_PAGE}${page}&${PARAM_HITS_PER_PAGE}${DEFAULT_HITS_PER_PAGE}`;
-    let me = this;
     axios.get(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
       .then(result => this.setSearchTopStories(result.data))
       .catch(error => this._isMounted && this.setState({ error }));
