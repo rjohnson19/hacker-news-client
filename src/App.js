@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import axios from "axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import "./App.css";
 import Search from "./Search";
 import Table from "./Table";
@@ -19,25 +19,48 @@ const PARAM_HITS_PER_PAGE = "hitsPerPage=";
 
 const username = "rjohnson19";
 
-const Loading = () =>
-  <div><FontAwesomeIcon icon={faSpinner} /></div>
+const Loading = () => (
+  <div>
+    <FontAwesomeIcon icon={faSpinner} />
+  </div>
+);
 
-const ErrorMessage = () =>
+const ErrorMessage = () => (
   <div className="interactions">
     <p>Something went wrong.</p>
   </div>
+);
 
-const withEither = (conditionFn, ConditionalComponent, Component) => (props) =>
-  conditionFn(props)
-    ? <ConditionalComponent />
-    : <Component { ...props } />
+const withEither = (conditionFn, ConditionalComponent, Component) => props =>
+  conditionFn(props) ? <ConditionalComponent /> : <Component {...props} />;
 
-const isError = (props) => props.error
-const isLoading = (props) => props.isLoading
+const isError = props => props.error;
+const isLoading = props => props.isLoading;
 
 const TableWithErrorFallback = withEither(isError, ErrorMessage, Table);
 
 const ButtonWithLoading = withEither(isLoading, Loading, Button);
+
+/**
+ * Updates the state with search results based on the previous state's results, if any.
+ * @param {*} hits 
+ * @param {*} page 
+ */
+const updateSearchTopStoriesState = (hits, page) => (prevState) => {
+  const { searchKey, results } = prevState;
+      const oldHits =
+        results && results[searchKey] ? results[searchKey].hits : [];
+
+      const updatedHits = [...oldHits, ...hits];
+
+      return {
+        results: {
+          ...results,
+          [searchKey]: { hits: updatedHits, page }
+        },
+        isLoading: false
+      };
+};
 
 class App extends Component {
   _isMounted = false;
@@ -51,7 +74,7 @@ class App extends Component {
       searchKey: "", // this is populated from seaarchTerm when it is submitted in onSearchSubmit()
       searchTerm: DEFAULT_QUERY, // this is the current value in the textbox, not neccesarily what is currently beind searched.
       error: null,
-      isLoading: false,
+      isLoading: false
     };
 
     this.onDismiss = this.onDismiss.bind(this);
@@ -70,19 +93,7 @@ class App extends Component {
 
   setSearchTopStories(result) {
     const { hits, page } = result;
-    const { searchKey, results } = this.state;
-    const oldHits =
-      results && results[searchKey] ? results[searchKey].hits : [];
-
-    const updatedHits = [...oldHits, ...hits];
-
-    this.setState({
-      results: {
-        ...results,
-        [searchKey]: { hits: updatedHits, page }
-      },
-      isLoading: false
-    });
+    this.setState(updateSearchTopStoriesState(hits, page));
   }
 
   componentDidMount() {
@@ -137,7 +148,14 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, results, searchKey, username, error, isLoading } = this.state;
+    const {
+      searchTerm,
+      results,
+      searchKey,
+      username,
+      error,
+      isLoading
+    } = this.state;
     let page =
       results && results[searchKey] && results[searchKey].page
         ? results[searchKey].page
@@ -159,18 +177,23 @@ class App extends Component {
             Search
           </Search>
         </div>
-        <TableWithErrorFallback error={error} list={list} onDismiss={this.onDismiss} />
+        <TableWithErrorFallback
+          error={error}
+          list={list}
+          onDismiss={this.onDismiss}
+        />
         <div className="interactions">
-            <ButtonWithLoading
-              isLoading={isLoading}
-              onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
-            >
-              Next Page
-            </ButtonWithLoading>
+          <ButtonWithLoading
+            isLoading={isLoading}
+            onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
+          >
+            Next Page
+          </ButtonWithLoading>
         </div>
       </div>
     );
   }
 }
 
+export { updateSearchTopStoriesState };
 export default App;
