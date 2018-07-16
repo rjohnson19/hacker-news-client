@@ -61,3 +61,7 @@
   border-radius: 0;
   border-bottom: 1px solid #38BB6C;
 }
+
+.sort-icon {
+  margin-left: 5px;
+}
