@@ -22,6 +22,23 @@ const username = "rjohnson19";
 const Loading = () =>
   <div><FontAwesomeIcon icon={faSpinner} /></div>
 
+const ErrorMessage = () =>
+  <div className="interactions">
+    <p>Something went wrong.</p>
+  </div>
+
+const withEither = (conditionFn, ConditionalComponent, Component) => (props) =>
+  conditionFn(props)
+    ? <ConditionalComponent />
+    : <Component { ...props } />
+
+const isError = (props) => props.error
+const isLoading = (props) => props.isLoading
+
+const TableWithErrorFallback = withEither(isError, ErrorMessage, Table);
+
+const ButtonWithLoading = withEither(isLoading, Loading, Button);
+
 class App extends Component {
   _isMounted = false;
 
@@ -142,23 +159,14 @@ class App extends Component {
             Search
           </Search>
         </div>
-        {error ? (
-          <div className="interactions">
-            <p>Something went wrong.</p>
-          </div>
-        ) : (
-          <Table list={list} onDismiss={this.onDismiss} />
-        )}
+        <TableWithErrorFallback error={error} list={list} onDismiss={this.onDismiss} />
         <div className="interactions">
-          {isLoading ? (
-            <Loading />
-          ) : (
-            <Button
+            <ButtonWithLoading
+              isLoading={isLoading}
               onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
             >
               Next Page
-            </Button>
-          )}
+            </ButtonWithLoading>
         </div>
       </div>
     );
