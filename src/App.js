@@ -1,5 +1,7 @@
 import React, { Component } from "react";
-import axios from 'axios';
+import axios from "axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import "./App.css";
 import Search from "./Search";
 import Table from "./Table";
@@ -17,6 +19,9 @@ const PARAM_HITS_PER_PAGE = "hitsPerPage=";
 
 const username = "rjohnson19";
 
+const Loading = () =>
+  <div><FontAwesomeIcon icon={faSpinner} /></div>
+
 class App extends Component {
   _isMounted = false;
 
@@ -28,7 +33,8 @@ class App extends Component {
       results: null,
       searchKey: "", // this is populated from seaarchTerm when it is submitted in onSearchSubmit()
       searchTerm: DEFAULT_QUERY, // this is the current value in the textbox, not neccesarily what is currently beind searched.
-      error: null
+      error: null,
+      isLoading: false
     };
 
     this.onDismiss = this.onDismiss.bind(this);
@@ -57,7 +63,8 @@ class App extends Component {
       results: {
         ...results,
         [searchKey]: { hits: updatedHits, page }
-      }
+      },
+      isLoading: false
     });
   }
 
@@ -72,10 +79,12 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm, page = 0) {
+    this.setState({ isLoading: true });
     const baseUrlSearch = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}`;
     const filterParams = `&${PARAM_TAGS}${DEFAULT_TAGS}`;
     const pageParams = `&${PARAM_PAGE}${page}&${PARAM_HITS_PER_PAGE}${DEFAULT_HITS_PER_PAGE}`;
-    axios.get(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
+    axios
+      .get(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
       .then(result => this.setSearchTopStories(result.data))
       .catch(error => this._isMounted && this.setState({ error }));
   }
@@ -111,7 +120,7 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, results, searchKey, username, error } = this.state;
+    const { searchTerm, results, searchKey, username, error, isLoading } = this.state;
     let page =
       results && results[searchKey] && results[searchKey].page
         ? results[searchKey].page
@@ -141,11 +150,15 @@ class App extends Component {
           <Table list={list} onDismiss={this.onDismiss} />
         )}
         <div className="interactions">
-          <Button
-            onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
-          >
-            Next Page
-          </Button>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <Button
+              onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
+            >
+              Next Page
+            </Button>
+          )}
         </div>
       </div>
     );
