@@ -51,7 +51,9 @@ class App extends Component {
       searchKey: "", // this is populated from seaarchTerm when it is submitted in onSearchSubmit()
       searchTerm: DEFAULT_QUERY, // this is the current value in the textbox, not neccesarily what is currently beind searched.
       error: null,
-      isLoading: false
+      isLoading: false,
+      sortKey: 'NONE',
+      isSortReverse: false,
     };
 
     this.onDismiss = this.onDismiss.bind(this);
@@ -60,6 +62,13 @@ class App extends Component {
     this.needsToSearchTopStories = this.needsToSearchTopStories.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
+    this.onSort = this.onSort.bind(this);
+  }
+
+  onSort(sortKey) {
+    // reverse a sort if user clicked a column header a subsequent time.
+    const isSortReverse = this.state.sortKey === sortKey && !this.state.isSortReverse;
+    this.setState({ sortKey, isSortReverse });
   }
 
   needsToSearchTopStories(searchTerm) {
@@ -137,7 +146,7 @@ class App extends Component {
   }
 
   render() {
-    const { searchTerm, results, searchKey, username, error, isLoading } = this.state;
+    const { searchTerm, results, searchKey, username, error, isLoading, sortKey, isSortReverse } = this.state;
     let page =
       results && results[searchKey] && results[searchKey].page
         ? results[searchKey].page
@@ -159,7 +168,7 @@ class App extends Component {
             Search
           </Search>
         </div>
-        <TableWithErrorFallback error={error} list={list} onDismiss={this.onDismiss} />
+        <TableWithErrorFallback error={error} list={list} onDismiss={this.onDismiss} sortKey={sortKey} onSort={this.onSort} isSortReverse={isSortReverse} />
         <div className="interactions">
             <ButtonWithLoading
               isLoading={isLoading}
