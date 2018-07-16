@@ -19,7 +19,6 @@ const username = "rjohnson19";
 
 class App extends Component {
   _isMounted = false;
-  _cancelRequest;
 
   constructor(props) {
     super(props);
@@ -70,24 +69,15 @@ class App extends Component {
 
   componentWillUnmount() {
     this._isMounted = false;
-    // cancel any pending http request
-    if (this._cancelRequest) {
-      this._cancelRequest();
-    }
   }
 
   fetchSearchTopStories(searchTerm, page = 0) {
-    const CancelToken = axios.CancelToken;
     const baseUrlSearch = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}`;
     const filterParams = `&${PARAM_TAGS}${DEFAULT_TAGS}`;
     const pageParams = `&${PARAM_PAGE}${page}&${PARAM_HITS_PER_PAGE}${DEFAULT_HITS_PER_PAGE}`;
     let me = this;
-    axios.get(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`, {
-      cancelToken: new CancelToken(function executor(c) {
-        me._cancelRequest = c;
-      })
-    })
-      .then(result => this._isMounted && this.setSearchTopStories(result.data))
+    axios.get(`${baseUrlSearch}${searchTerm}${filterParams}${pageParams}`)
+      .then(result => this.setSearchTopStories(result.data))
       .catch(error => this._isMounted && this.setState({ error }));
   }
 
