@@ -38,17 +38,20 @@ class Table extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortKey: 'NONE',
-      isSortReverse: false,
+      sortKey: "NONE",
+      isSortReverse: false
     };
-    
+
     this.onSort = this.onSort.bind(this);
   }
 
   onSort(sortKey) {
     // reverse a sort if user clicked a column header a subsequent time.
-    const isSortReverse = this.state.sortKey === sortKey && !this.state.isSortReverse;
-    this.setState({ sortKey, isSortReverse });
+    this.setState(prevState => {
+      const isSortReverse =
+        prevState.sortKey === sortKey && !prevState.isSortReverse;
+      return { sortKey, isSortReverse };
+    });
   }
 
   render() {

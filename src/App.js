@@ -43,23 +43,22 @@ const ButtonWithLoading = withEither(isLoading, Loading, Button);
 
 /**
  * Updates the state with search results based on the previous state's results, if any.
- * @param {*} hits 
- * @param {*} page 
+ * @param {*} hits
+ * @param {*} page
  */
-const updateSearchTopStoriesState = (hits, page) => (prevState) => {
+const updateSearchTopStoriesState = (hits, page) => prevState => {
   const { searchKey, results } = prevState;
-      const oldHits =
-        results && results[searchKey] ? results[searchKey].hits : [];
+  const oldHits = results && results[searchKey] ? results[searchKey].hits : [];
 
-      const updatedHits = [...oldHits, ...hits];
+  const updatedHits = [...oldHits, ...hits];
 
-      return {
-        results: {
-          ...results,
-          [searchKey]: { hits: updatedHits, page }
-        },
-        isLoading: false
-      };
+  return {
+    results: {
+      ...results,
+      [searchKey]: { hits: updatedHits, page }
+    },
+    isLoading: false
+  };
 };
 
 class App extends Component {
@@ -133,17 +132,19 @@ class App extends Component {
   }
 
   onDismiss(id) {
-    const { searchKey, results } = this.state;
-    const { hits, page } = results[searchKey];
+    this.setState(prevState => {
+      const { searchKey, results } = prevState;
+      const { hits, page } = results[searchKey];
 
-    const isNotId = item => item.objectID !== id;
-    const updatedHits = hits.filter(isNotId);
+      const isNotId = item => item.objectID !== id;
+      const updatedHits = hits.filter(isNotId);
 
-    this.setState({
-      results: {
-        ...results,
-        [searchKey]: { hits: updatedHits, page }
-      }
+      return {
+        results: {
+          ...results,
+          [searchKey]: { hits: updatedHits, page }
+        }
+      };
     });
   }
 
